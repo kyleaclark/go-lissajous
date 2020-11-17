@@ -4,7 +4,6 @@ import (
 	"image"
 	"image/color"
 	"image/gif"
-	"io"
 	"log"
 	"math"
 	"math/rand"
@@ -34,15 +33,10 @@ func main() {
 }
 
 func handler(w http.ResponseWriter, r *http.Request) {
-	lissajous(w)
-}
-
-func lissajous(out io.Writer) {
 	shufflePalette()
-
 	anim := generateAnimation()
 
-	gif.EncodeAll(out, &anim)
+	gif.EncodeAll(w, &anim)
 }
 
 func shufflePalette() {
@@ -62,7 +56,7 @@ func generateAnimation() gif.GIF {
 	freq := rand.Float64() * 5.0
 
 	anim := gif.GIF{LoopCount: nFrames}
-	colorIndex := uint8(rand.Intn(3) + 1)
+	colorIndex := uint8(rand.Intn(4) + 1)
 	phase := 0.0
 
 	for i := 0; i < nFrames; i++ {
@@ -72,7 +66,7 @@ func generateAnimation() gif.GIF {
 		for t := 0.0; t < cycles*2*math.Pi; t += res {
 			x := math.Sin(t)
 			y := math.Sin(t*freq + phase)
-			setImgColorIndex(img, x, y, colorIndex)
+			setImgColorIndex(img, size, x, y, colorIndex)
 		}
 
 		phase += 0.1
@@ -83,10 +77,9 @@ func generateAnimation() gif.GIF {
 	return anim
 }
 
-func setImgColorIndex(img *image.Paletted, x float64, y float64, colorIndex uint8) {
-	const size = 200
-	xIndex := size+int(x*size)
-	yIndex := size+int(y*size)
+func setImgColorIndex(img *image.Paletted, size int, x float64, y float64, colorIndex uint8) {
+	xIndex := size+int(x * float64(size))
+	yIndex := size+int(y * float64(size))
 
 	// Set color index on 9x9 block
 	for i := -1; i < 1; i++ {
